@@ -1,0 +1,10 @@
+3.2.1
+1.	Lorsque l'on quitte et que l'on relance, on ne peut pas attacher la socket serveur à
+	une interface car celle-ci est toujours en utilisation.
+	
+2.	La commande 'nc' se termine et le serveur se termine aussi.
+
+3.	Telnet ne peut pas se connecter au serveur
+
+4.	Le deuxième client ne peut pas accéder au serveur, il ne peut pas créer de socket car il y en a
+	déjà une en utilisation. Le client est donc en attente.
