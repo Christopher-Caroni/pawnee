@@ -12,33 +12,39 @@
 
 int main (void)
 {
+  int socket_serveur;
+  if ( (socket_serveur = creer_serveur(8080)) == -1)
+  {
+    perror("creer serveur");
+    exit(1);
+  }
+
   while (1)
   {
-    int socket_serveur;
-    if ( (socket_serveur = creer_serveur(8080)) == -1)
-    {
-      perror("creer serveur");
-      exit(1);
-    }
     int socket_client = accept(socket_serveur, NULL, NULL);
     if (socket_client == -1)
     {
       perror("accept client");
+      close(socket_client);
+      continue; // go to next client
     }
 
     if (display_welcome_message(socket_client) == -1)
     {
-      exit(1);
+      close(socket_client);
+      continue; // go to next client
     }
 
     int connected = 1;
     while (connected)
     {
-      connected = repeat_messages(socket_client);
+      if ( (connected = repeat_messages(socket_client)) == -1)
+      {
+        close(socket_client);
+        continue; // go to next client
+      }
     }
-    /* Une fois qu'on lit rien, on ferme les sockets */
     close(socket_client);
-    close(socket_serveur);
   }
   return 0;
 }
