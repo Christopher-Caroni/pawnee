@@ -10,6 +10,11 @@
 # include "socket.h"
 # include "message.h"
 
+void traitement_signal(int sig)
+{
+  printf("Signal %d reçu\n", sig );
+}
+
 void initialiser_signaux(void)
 {
   // if current handling is SIG_ERR, set to SIG_IGN
@@ -17,23 +22,25 @@ void initialiser_signaux(void)
   {
     perror("signal");
   }
+
+  // set action to traitement_signal when receiving signal SIGCHLD
+  struct sigaction sa ;
+  sa.sa_handler = traitement_signal;
+  sigemptyset (&sa.sa_mask);
+  sa.sa_flags = SA_RESTART ;
+  if (sigaction(SIGCHLD, &sa, NULL) == -1)
+  {
+    perror("sigaction(SIGCHLD)");
+  }
 }
 
 void traite_client(int socket_client) {
-  if (display_welcome_message(socket_client) == -1)
-  {
-    close(socket_client);
-    return;
-  }
+  display_welcome_message(socket_client);
 
   int connected = 1;
   while (connected)
   {
-    if ( (connected = repeat_messages(socket_client)) == -1)
-    {
-      close(socket_client);
-      return;
-    }
+    connected = repeat_messages(socket_client);
   }
 }
 
