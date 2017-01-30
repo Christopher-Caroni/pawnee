@@ -19,6 +19,23 @@ void initialiser_signaux(void)
   }
 }
 
+void traite_client(int socket_client) {
+  if (display_welcome_message(socket_client) == -1)
+  {
+    close(socket_client);
+    return;
+  }
+
+  int connected = 1;
+  while (connected)
+  {
+    if ( (connected = repeat_messages(socket_client)) == -1)
+    {
+      close(socket_client);
+      return;
+    }
+  }
+}
 
 int main (void)
 {
@@ -40,20 +57,9 @@ int main (void)
       continue; // go to next client
     }
 
-    if (display_welcome_message(socket_client) == -1)
+    if ( fork() == 0)
     {
-      close(socket_client);
-      continue; // go to next client
-    }
-
-    int connected = 1;
-    while (connected)
-    {
-      if ( (connected = repeat_messages(socket_client)) == -1)
-      {
-        close(socket_client);
-        continue; // go to next client
-      }
+      traite_client(socket_client);
     }
     close(socket_client);
   }
