@@ -5,13 +5,24 @@
 # include <sys/types.h>
 # include <sys/socket.h>
 # include <stdlib.h>
+# include <signal.h>
 
 # include "socket.h"
 # include "message.h"
 
+void initialiser_signaux(void)
+{
+  // if current handling is SIG_ERR, set to SIG_IGN
+  if (signal(SIGPIPE, SIG_IGN) == SIG_ERR)
+  {
+    perror("signal");
+  }
+}
+
 
 int main (void)
 {
+  initialiser_signaux();
   int socket_serveur;
   if ( (socket_serveur = creer_serveur(8080)) == -1)
   {

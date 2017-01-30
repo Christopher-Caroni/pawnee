@@ -2,6 +2,7 @@
 #include <unistd.h>
 # include <string.h>
 # include <stdio.h>
+# include <signal.h>
 
 
 const char* WELCOME_MESSAGE =
@@ -56,12 +57,13 @@ int repeat_messages(int socket_client) {
   char readMessage[1024];
   if ( (status = read(socket_client, &readMessage, 1024)) == -1)
   {
-    perror("Could not read user message");
+  //  perror("Could not read user message");
     return -1;
   }
   if (write(socket_client, &readMessage, status) == -1)
   {
-    perror("Could not write user message");
+  // TODO ignore perror on SIGPIPE
+  //  perror("Could not write user message");
     return -1;
   }
   return status;
