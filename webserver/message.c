@@ -47,6 +47,27 @@ int display_welcome_message(int socket_client) {
   return 0;
 }
 
+int read_and_write(FILE* fp) {
+  if (fp == NULL) {
+    perror("fdopen");
+    return -1;
+  }
+
+  char input[1024];
+  if ( fgets(input, 1024, fp) == NULL) {
+    perror("fgets");
+    return -1;
+  }
+
+  int status;
+  if ( (status = fprintf(fp, "<Kuruk> : %s", input)) < 0)
+  {
+    perror("fprintf");
+    return -1;
+  }
+  return status;
+}
+
 /*
 * read un message jusqua 1024 de longueur et réécrit ce message
 * Lance perror en cas d'erreur. Stocke dans connected la valeur de
@@ -54,17 +75,11 @@ int display_welcome_message(int socket_client) {
 */
 int repeat_messages(int socket_client) {
   int status = 1;
-  char readMessage[1024];
-  if ( (status = read(socket_client, &readMessage, 1024)) == -1)
+  FILE * fp = fdopen(socket_client, "w+");
+  while (status > 0)
   {
-  //  perror("Could not read user message");
-    return -1;
+    status = read_and_write(fp);
   }
-  if (write(socket_client, &readMessage, status) == -1)
-  {
-  // TODO ignore perror on SIGPIPE
-  //  perror("Could not write user message");
-    return -1;
-  }
-  return status;
+  fclose(fp);
+  return 0;
 }

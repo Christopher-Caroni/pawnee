@@ -48,12 +48,7 @@ void initialiser_signaux(void)
 
 void traite_client(int socket_client) {
   display_welcome_message(socket_client);
-
-  int connected = 1;
-  while (connected)
-  {
-    connected = repeat_messages(socket_client);
-  }
+  repeat_messages(socket_client);
 }
 
 int main (void)
