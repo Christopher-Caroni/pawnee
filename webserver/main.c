@@ -44,8 +44,12 @@ void initialiser_signaux(void)
 }
 
 void traite_client(int socket_client) {
+
+  /*
   display_welcome_message(socket_client);
   repeat_messages(socket_client);
+  */
+  treatHTTP(socket_client);
 }
 
 int main (void)

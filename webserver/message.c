@@ -3,6 +3,7 @@
 # include <string.h>
 # include <stdio.h>
 # include <signal.h>
+# include <regex.h>
 
 
 const char* WELCOME_MESSAGE =
@@ -48,11 +49,6 @@ int display_welcome_message(int socket_client) {
 }
 
 int read_and_write(FILE* fp) {
-  if (fp == NULL) {
-    perror("fdopen");
-    return -1;
-  }
-
   char input[1024];
   if ( fgets(input, 1024, fp) == NULL) {
     perror("fgets");
@@ -65,7 +61,7 @@ int read_and_write(FILE* fp) {
     perror("fprintf");
     return -1;
   }
-  return status;
+  return 1;
 }
 
 /*
@@ -76,10 +72,41 @@ int read_and_write(FILE* fp) {
 int repeat_messages(int socket_client) {
   int status = 1;
   FILE * fp = fdopen(socket_client, "w+");
+  if (fp == NULL) {
+    perror("fdopen");
+    return -1;
+  }
   while (status > 0)
   {
     status = read_and_write(fp);
   }
   fclose(fp);
+  return 0;
+}
+
+int treatHTTP(int socket_client) {
+  FILE * fp = fdopen(socket_client, "w+");
+  char input[1024];
+  if ( fgets(input, 1024, fp) == NULL) {
+    perror("fgets");
+    return -1;
+  }
+
+  regex_t regex;
+  int reti;
+
+  reti = regcomp(&regex, "GET\\s\\/\\sHTTP\\/[1].[0-1]", 0);
+  if (reti) {
+    fprintf(stderr, "Could not compile regex\n");
+    return -1;
+  }
+
+  reti = regexec(&regex, input, 0, NULL, 0);
+  if (!reti) {
+    printf("matched\n");
+  }
+  else if (reti == REG_NOMATCH) {
+    printf("did not match\n");
+  }
   return 0;
 }
