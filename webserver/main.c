@@ -16,13 +16,10 @@ void traitement_signal(int sig)
   printf("Signal %d reçu\n", sig);
   if (sig == SIGCHLD)
   {
-    int status;
     int child;
-    if ( (child = wait(&status) == -1))
+    while ( (child = waitpid(-1, NULL, WNOHANG) > 0))
     {
-      perror("wait");
-    } else {
-      printf("waited for child : %d\n", child);
+      printf("waited for child pid = %d to end\n", child);
     }
   }
 }
