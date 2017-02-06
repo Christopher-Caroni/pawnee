@@ -1,8 +1,9 @@
 # include <stdio.h>
 # include <string.h>
 # include <errno.h>
-#include <unistd.h>
+# include <unistd.h>
 # include <sys/types.h>
+# include <sys/wait.h>
 # include <sys/socket.h>
 # include <stdlib.h>
 # include <signal.h>
@@ -12,7 +13,18 @@
 
 void traitement_signal(int sig)
 {
-  printf("Signal %d reçu\n", sig );
+  printf("Signal %d reçu\n", sig);
+  if (sig == SIGCHLD)
+  {
+    int status;
+    int child;
+    if ( (child = wait(&status) == -1))
+    {
+      perror("wait");
+    } else {
+      printf("waited for child : %d\n", child);
+    }
+  }
 }
 
 void initialiser_signaux(void)
@@ -26,8 +38,8 @@ void initialiser_signaux(void)
   // set action to traitement_signal when receiving signal SIGCHLD
   struct sigaction sa ;
   sa.sa_handler = traitement_signal;
-  sigemptyset (&sa.sa_mask);
-  sa.sa_flags = SA_RESTART ;
+  sigemptyset (&sa.sa_mask); // ensemble vide à bloqier
+  sa.sa_flags = SA_RESTART; // redemarrer fonctions qui auraient pu etre interrompus
   if (sigaction(SIGCHLD, &sa, NULL) == -1)
   {
     perror("sigaction(SIGCHLD)");
@@ -57,6 +69,7 @@ int main (void)
   while (1)
   {
     int socket_client = accept(socket_serveur, NULL, NULL);
+    printf("accepted client\n");
     if (socket_client == -1)
     {
       perror("accept client");
@@ -67,6 +80,7 @@ int main (void)
     if ( fork() == 0)
     {
       traite_client(socket_client);
+      return 0;
     }
     close(socket_client);
   }
