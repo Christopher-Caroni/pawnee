@@ -94,7 +94,7 @@ const char* MESSAGE_404 =
 int display_welcome_message(FILE * fp) {
   char* response = "HTTP/1.1 200 OK\n"
   "Connection: close\n"
-  "Content-Length: 3777\n"
+  "Content-Length: 3788\n"
   "\n";
   if (fprintf(fp, "%s%s", response, WELCOME_MESSAGE) < 0)
   {
@@ -105,9 +105,9 @@ int display_welcome_message(FILE * fp) {
 }
 
 int display_404(FILE *fp) {
-  char* response = "HTTP/1.1 200 OK\n"
+  char* response = "HTTP/1.1 404 Not Found\n"
   "Connection: close\n"
-  "Content-Length: 5766\n"
+  "Content-Length: 5542\n"
   "\n";
   if (fprintf(fp, "%s%s", response, MESSAGE_404) < 0)
   {
