@@ -1,3 +1,4 @@
-socket.o: socket.c
-message.o: message.c
+regmatch.o: regmatch.c
 main.o: main.c socket.h message.h
+message.o: message.c regmatch.h
+socket.o: socket.c
