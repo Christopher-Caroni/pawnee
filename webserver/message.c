@@ -5,6 +5,7 @@
 # include <signal.h>
 
 # include "regmatch.h"
+# include "input.h"
 
 
 const char* WELCOME_MESSAGE =
@@ -170,7 +171,7 @@ int treatHTTP(int socket_client) {
   int lineCount = 0;
   char ressource[1024] = "";
 
-  while (fgets(input, 1024, fp) != NULL)
+  while (fgets_or_exit(input, 1024, fp) != NULL)
   {
     printf("message received : \"%s\"\n", input);
     if (lineCount == 0) {

@@ -1,4 +1,5 @@
+input.o: input.c
 regmatch.o: regmatch.c
 main.o: main.c socket.h message.h
-message.o: message.c regmatch.h
+message.o: message.c regmatch.h input.h
 socket.o: socket.c
