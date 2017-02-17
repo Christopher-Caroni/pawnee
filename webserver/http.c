@@ -9,50 +9,20 @@
 # include "http.h"
 
 
-// Répond sur le fp soit avec le message de Bienvenue soit avec une erreur 404
-int respond(FILE *fp, char *ressource) {
-  char *base = "/";
-  printf("compare to base: %d\n", strcmp(ressource, base));
-  if (strcmp(ressource, base) == 0) {
-    write_welcome_message(fp);
-    return 0;
-  } else {
-    write_404_message(fp);
-    return 0;
-  }
-  return -1;
+void send_status(FILE *client, int code, const char *reason_phrase)
+{
+  fprintf(client, "HTTP/1.1 %d:%s\n", code, reason_phrase);
+  return;
 }
 
-// LEGACY
-// Lit jusqu'à 1024 chars sur une ligne et puis les réécris avec "<Kuruk> : " devant
-int read_and_write(FILE *fp) {
-  char input[1024];
-  if ( fgets(input, 1024, fp) == NULL) {
-    perror("fgets");
-    return -1;
-  }
-
-  int status;
-  if ( (status = fprintf(fp, "<Kuruk> : %s", input)) < 0)
-  {
-    perror("fprintf");
-    return -1;
-  }
-  return 1;
-}
-
-int send_bad_request(FILE *fp) {
-  char* bad_request_message = "HTTP/1.1 400 Bad Request\n"
-  "Connection: close\n"
-  "Content-Length: 17\n"
-  "\n"
-  "400 Bad request\n";
-  if (fprintf(fp, "%s", bad_request_message) < 0)
-  {
-    perror("fprintf");
-    return -1;
-  }
-  return 0;
+void send_response(FILE *client, int code, const char *reason_phrase, const char *message_body)
+{
+  send_status(client, code, reason_phrase);
+  fprintf(client, "Connection: close\n");
+  int length = strlen(message_body);
+  fprintf(client, "Content-Length: %d\n\n", length);
+  fprintf(client, "%s\n", message_body);
+  return;
 }
 
 // Returns 0 if invalid request, 1 if correct
@@ -108,17 +78,23 @@ void skip_headers(FILE *client)
 }
 
 int treatHTTP(int socket_client) {
-  FILE * fp = fdopen(socket_client, "w+");
+  FILE *client = fdopen(socket_client, "w+");
   char input[1024];
   http_request request = {HTTP_UNSUPPORTED, 0, 0, ""};
+  int bad_request = 0;
 
-  fgets_or_exit(input, 1024, fp);
-  if (parse_http_request(input, &request) == 0) {
-    printf("bad req, terminating connection\n");
-    send_bad_request(fp);
-    return -1;
-  }
+  fgets_or_exit(input, 1024, client);
+  bad_request = parse_http_request(input, &request);
 
-  skip_headers(fp);
-  return respond(fp, request.target);
+  skip_headers(client);
+
+  if(request.method == HTTP_UNSUPPORTED)
+    send_response(client, 405, "Method Not Allowed", "Method Not Allowed \r\n");
+  else if (bad_request == 0)
+    send_response(client, 400, "Bad Request" , "Bad request\r\n");
+  else if (strcmp(request. target, "/") == 0)
+    send_response(client, 200, "OK", WELCOME_MESSAGE);
+  else
+    send_response(client, 404, "Not Found", MESSAGE_404);
+  return 0;
 }
