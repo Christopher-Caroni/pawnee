@@ -1,5 +1,6 @@
+http.o: http.c regmatch.h input.h message.h http.h
 input.o: input.c
 regmatch.o: regmatch.c
-main.o: main.c socket.h message.h
-message.o: message.c regmatch.h input.h
+main.o: main.c socket.h http.h
+message.o: message.c
 socket.o: socket.c

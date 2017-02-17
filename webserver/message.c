@@ -1,12 +1,5 @@
-# include <errno.h>
-# include <unistd.h>
-# include <string.h>
 # include <stdio.h>
-# include <signal.h>
-
-# include "regmatch.h"
-# include "input.h"
-
+# include <stdlib.h>
 
 const char* WELCOME_MESSAGE =
 "          _____                    _____                    _____                    _____                    _____          \n"
@@ -117,76 +110,4 @@ int write_404_message(FILE *fp) {
     return -1;
   }
   return 0;
-}
-
-// Répond sur le fp soit avec le message de Bienvenue soit avec une erreur 404
-int respond(FILE * fp, char *ressource) {
-  char *base = "/";
-  printf("result comparison = %d\n", strcmp(ressource, base));
-  if (strcmp(ressource, base) == 0) {
-    write_welcome_message(fp);
-    return 0;
-  } else {
-    write_404_message(fp);
-    return 0;
-  }
-  return -1;
-}
-
-// Lit jusqu'à 1024 chars sur une ligne et puis les réécris avec "<Kuruk> : " devant
-int read_and_write(FILE* fp) {
-  char input[1024];
-  if ( fgets(input, 1024, fp) == NULL) {
-    perror("fgets");
-    return -1;
-  }
-
-  int status;
-  if ( (status = fprintf(fp, "<Kuruk> : %s", input)) < 0)
-  {
-    perror("fprintf");
-    return -1;
-  }
-  return 1;
-}
-
-int send_bad_request(FILE *fp) {
-  char* bad_request_message = "HTTP/1.1 400 Bad Request\n"
-  "Connection: close\n"
-  "Content-Length: 17\n"
-  "\n"
-  "400 Bad request\n";
-  if (fprintf(fp, "%s", bad_request_message) < 0)
-  {
-    perror("fprintf");
-    return -1;
-  }
-  return 0;
-}
-
-
-int treatHTTP(int socket_client) {
-  FILE * fp = fdopen(socket_client, "w+");
-  char input[1024];
-  int lineCount = 0;
-  char ressource[1024] = "";
-
-  while (fgets_or_exit(input, 1024, fp) != NULL)
-  {
-    printf("message received : \"%s\"\n", input);
-    if (lineCount == 0) {
-      if (match_get_request(input, ressource) == -1) {
-        send_bad_request(fp);
-        return -1;
-      }
-    } else if (lineCount > 0) {
-      if (match_empty_line(input) == 0)
-      {
-        respond(fp, ressource);
-        return 0;
-      }
-    }
-    lineCount++;
-  }
-  return -1;
 }
