@@ -19,7 +19,7 @@ void traitement_signal(int sig)
     int child;
     while ( (child = waitpid(-1, NULL, WNOHANG) > 0))
     {
-      printf("waited for child pid = %d to end\n", child);
+      printf("waited for child pid = %d to end\n\n", child);
     }
   }
 }

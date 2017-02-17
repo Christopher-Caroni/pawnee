@@ -94,29 +94,31 @@ int parse_http_request(const char *request_line, http_request *request) {
   return correct;
 }
 
+void skip_headers(FILE *client)
+{
+
+  char input[1024];
+  while (fgets_or_exit(input, 1024, client))
+  {
+    if (match_empty_line(input) == 0)
+    {
+      return;
+    }
+  }
+}
+
 int treatHTTP(int socket_client) {
   FILE * fp = fdopen(socket_client, "w+");
   char input[1024];
-  int lineCount = 0;
   http_request request = {HTTP_UNSUPPORTED, 0, 0, ""};
 
-  while (fgets_or_exit(input, 1024, fp) != NULL)
-  {
-    // printf("message received : \"%s\"\n", input);
-    if (lineCount == 0) {
-      if (parse_http_request(input, &request) == 0) {
-        printf("bad req, terminating connection\n");
-        send_bad_request(fp);
-        return -1;
-      }
-    } else if (lineCount > 0) {
-      if (match_empty_line(input) == 0)
-      {
-        respond(fp, request.target);
-        return 0;
-      }
-    }
-    lineCount++;
+  fgets_or_exit(input, 1024, fp);
+  if (parse_http_request(input, &request) == 0) {
+    printf("bad req, terminating connection\n");
+    send_bad_request(fp);
+    return -1;
   }
-  return -1;
+
+  skip_headers(fp);
+  return respond(fp, request.target);
 }
